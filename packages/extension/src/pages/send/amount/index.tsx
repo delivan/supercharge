@@ -54,6 +54,7 @@ export const SendAmountPage: FunctionComponent = observer(() => {
   const initialCoinMinimalDenom = searchParams.get("coinMinimalDenom");
 
   const chainId = initialChainId || chainStore.chainInfosInUI[0].chainId;
+  const chainInfo = chainStore.getChain(chainId);
   const coinMinimalDenom =
     initialCoinMinimalDenom ||
     chainStore.getChain(chainId).currencies[0].coinMinimalDenom;
@@ -71,7 +72,9 @@ export const SendAmountPage: FunctionComponent = observer(() => {
   }, [navigate, initialChainId, initialCoinMinimalDenom]);
 
   const account = accountStore.getAccount(chainId);
-  const sender = account.bech32Address;
+  const sender = chainInfo.evm
+    ? account.ethereumHexAddress
+    : account.bech32Address;
 
   const currency = chainStore
     .getChain(chainId)
@@ -79,7 +82,7 @@ export const SendAmountPage: FunctionComponent = observer(() => {
 
   const balance = queriesStore
     .get(chainId)
-    .queryBalances.getQueryBech32Address(sender)
+    .queryBalances.getBalancesByAddress(sender)
     .getBalance(currency);
 
   const sendConfigs = useSendTxConfig(
@@ -235,77 +238,97 @@ export const SendAmountPage: FunctionComponent = observer(() => {
       }}
       onSubmit={async (e) => {
         e.preventDefault();
-
         if (!txConfigsValidate.interactionBlocked) {
           try {
-            await accountStore
-              .getAccount(chainId)
-              .makeSendTokenTx(
+            if (chainInfo.evm) {
+              const unsignedTx = await account.ethereum.makeSendTokenTx(
                 sendConfigs.amountConfig.amount[0].toDec().toString(),
                 sendConfigs.amountConfig.amount[0].currency,
                 sendConfigs.recipientConfig.recipient
-              )
-              .send(
-                sendConfigs.feeConfig.toStdFee(),
-                sendConfigs.memoConfig.memo,
-                {
-                  preferNoSetFee: true,
-                  preferNoSetMemo: true,
-                  sendTx: async (chainId, tx, mode) => {
-                    const msg = new SendTxAndRecordMsg(
-                      historyType,
-                      chainId,
-                      sendConfigs.recipientConfig.chainId,
-                      tx,
-                      mode,
-                      false,
-                      sendConfigs.senderConfig.sender,
-                      sendConfigs.recipientConfig.recipient,
-                      sendConfigs.amountConfig.amount.map((amount) => {
-                        return {
-                          amount: DecUtils.getTenExponentN(
-                            amount.currency.coinDecimals
-                          )
-                            .mul(amount.toDec())
-                            .toString(),
-                          denom: amount.currency.coinMinimalDenom,
-                        };
-                      }),
-                      sendConfigs.memoConfig.memo
-                    );
-                    return await new InExtensionMessageRequester().sendMessage(
-                      BACKGROUND_PORT,
-                      msg
-                    );
+              );
+
+              if (unsignedTx) {
+                await account.ethereum.sendEthereumTx(unsignedTx);
+                notification.show(
+                  "success",
+                  intl.formatMessage({
+                    id: "notification.transaction-success",
+                  }),
+                  ""
+                );
+              }
+            } else {
+              await accountStore
+                .getAccount(chainId)
+                .makeSendTokenTx(
+                  sendConfigs.amountConfig.amount[0].toDec().toString(),
+                  sendConfigs.amountConfig.amount[0].currency,
+                  sendConfigs.recipientConfig.recipient
+                )
+                .send(
+                  sendConfigs.feeConfig.toStdFee(),
+                  sendConfigs.memoConfig.memo,
+                  {
+                    preferNoSetFee: true,
+                    preferNoSetMemo: true,
+                    sendTx: async (chainId, tx, mode) => {
+                      const msg = new SendTxAndRecordMsg(
+                        historyType,
+                        chainId,
+                        sendConfigs.recipientConfig.chainId,
+                        tx,
+                        mode,
+                        false,
+                        sendConfigs.senderConfig.sender,
+                        sendConfigs.recipientConfig.recipient,
+                        sendConfigs.amountConfig.amount.map((amount) => {
+                          return {
+                            amount: DecUtils.getTenExponentN(
+                              amount.currency.coinDecimals
+                            )
+                              .mul(amount.toDec())
+                              .toString(),
+                            denom: amount.currency.coinMinimalDenom,
+                          };
+                        }),
+                        sendConfigs.memoConfig.memo
+                      );
+                      return await new InExtensionMessageRequester().sendMessage(
+                        BACKGROUND_PORT,
+                        msg
+                      );
+                    },
                   },
-                },
-                {
-                  onBroadcasted: () => {
-                    chainStore.enableVaultsWithCosmosAddress(
-                      sendConfigs.recipientConfig.chainId,
-                      sendConfigs.recipientConfig.recipient
-                    );
-                  },
-                  onFulfill: (tx: any) => {
-                    if (tx.code != null && tx.code !== 0) {
-                      console.log(tx.log ?? tx.raw_log);
+                  {
+                    onBroadcasted: () => {
+                      chainStore.enableVaultsWithCosmosAddress(
+                        sendConfigs.recipientConfig.chainId,
+                        sendConfigs.recipientConfig.recipient
+                      );
+                    },
+                    onFulfill: (tx: any) => {
+                      if (tx.code != null && tx.code !== 0) {
+                        console.log(tx.log ?? tx.raw_log);
+                        notification.show(
+                          "failed",
+                          intl.formatMessage({
+                            id: "error.transaction-failed",
+                          }),
+                          ""
+                        );
+                        return;
+                      }
                       notification.show(
-                        "failed",
-                        intl.formatMessage({ id: "error.transaction-failed" }),
+                        "success",
+                        intl.formatMessage({
+                          id: "notification.transaction-success",
+                        }),
                         ""
                       );
-                      return;
-                    }
-                    notification.show(
-                      "success",
-                      intl.formatMessage({
-                        id: "notification.transaction-success",
-                      }),
-                      ""
-                    );
-                  },
-                }
-              );
+                    },
+                  }
+                );
+            }
 
             if (!isDetachedMode) {
               navigate("/", {

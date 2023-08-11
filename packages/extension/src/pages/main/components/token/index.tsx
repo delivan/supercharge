@@ -158,6 +158,8 @@ export const TokenItem: FunctionComponent<TokenItemProps> = observer(
     const isIBC = useMemo(() => {
       return viewToken.token.currency.coinMinimalDenom.startsWith("ibc/");
     }, [viewToken.token.currency]);
+    const isBridgedETH =
+      viewToken.chainInfo.evm && viewToken.chainInfo.evm.chainId !== "1";
 
     const coinDenom = useMemo(() => {
       if (
@@ -308,7 +310,7 @@ export const TokenItem: FunctionComponent<TokenItemProps> = observer(
             </XAxis>
             <Skeleton layer={1} isNotReady={isNotReady} dummyMinWidth="4.5rem">
               <Caption1 style={{ color: ColorPalette["gray-300"] }}>
-                {isIBC
+                {isIBC || isBridgedETH
                   ? `on ${viewToken.chainInfo.chainName}`
                   : viewToken.chainInfo.chainName}
               </Caption1>

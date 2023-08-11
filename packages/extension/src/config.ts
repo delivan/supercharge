@@ -4,7 +4,54 @@ import { ChainInfo } from "@keplr-wallet/types";
 export const EmbedChainInfos: ChainInfo[] = [
   {
     evm: {
-      chainId: "60",
+      chainId: "420",
+      chainName: "Optimism Goerli",
+      jsonRpcProvider: "https://goerli.optimism.io",
+      nativeCurrency: {
+        coinDenom: "ETH",
+        coinMinimalDenom: "wei",
+        coinDecimals: 18,
+        coinImageUrl:
+          "https://avatars.githubusercontent.com/u/6250754?s=200&v=4",
+      },
+    },
+    rpc: "https://goerli.optimism.io",
+    rest: "https://goerli.optimism.io",
+    chainId: "420",
+    chainName: "Optimism Goerli",
+    stakeCurrency: {
+      coinDenom: "ETH",
+      coinMinimalDenom: "wei",
+      coinDecimals: 18,
+      coinImageUrl: "https://avatars.githubusercontent.com/u/6250754?s=200&v=4",
+    },
+    bip44: {
+      coinType: 60,
+    },
+    bech32Config: Bech32Address.defaultBech32Config("dummy"),
+    currencies: [
+      {
+        coinDenom: "ETH",
+        coinMinimalDenom: "wei",
+        coinDecimals: 18,
+        coinImageUrl:
+          "https://avatars.githubusercontent.com/u/6250754?s=200&v=4",
+      },
+    ],
+    feeCurrencies: [
+      {
+        coinDenom: "ETH",
+        coinMinimalDenom: "wei",
+        coinDecimals: 18,
+        coinImageUrl:
+          "https://avatars.githubusercontent.com/u/6250754?s=200&v=4",
+      },
+    ],
+    features: ["eth-address-gen", "eth-key-sign"],
+  },
+  {
+    evm: {
+      chainId: "10",
       chainName: "Optimism",
       jsonRpcProvider: "https://mainnet.optimism.io",
       nativeCurrency: {
@@ -18,7 +65,7 @@ export const EmbedChainInfos: ChainInfo[] = [
     },
     rpc: "https://mainnet.optimism.io",
     rest: "https://mainnet.optimism.io",
-    chainId: "60",
+    chainId: "10",
     chainName: "Optimism",
     stakeCurrency: {
       coinDenom: "ETH",

@@ -178,23 +178,23 @@ export class RecipientConfig
       }
     }
 
-    if (this._allowHexAddressOnEthermint) {
-      const hasEthereumAddress =
-        this.chainInfo.features?.includes("eth-address-gen");
-      if (hasEthereumAddress && rawRecipient.startsWith("0x")) {
-        try {
-          if (isAddress(rawRecipient)) {
-            const buf = Buffer.from(
-              rawRecipient.replace("0x", "").toLowerCase(),
-              "hex"
-            );
-            return new Bech32Address(buf).toBech32(this.bech32Prefix);
-          }
-        } catch {
-          return "";
+    const hasEthereumAddress =
+      this.chainInfo.features?.includes("eth-address-gen");
+    const isEVMChain = !!this.chainInfo.evm;
+    try {
+      if (hasEthereumAddress && isAddress(rawRecipient)) {
+        if (isEVMChain) {
+          return rawRecipient;
+        } else if (this._allowHexAddressOnEthermint) {
+          const buf = Buffer.from(
+            rawRecipient.replace("0x", "").toLowerCase(),
+            "hex"
+          );
+          return new Bech32Address(buf).toBech32(this.bech32Prefix);
         }
-        return "";
       }
+    } catch {
+      return "";
     }
 
     return rawRecipient;
