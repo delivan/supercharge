@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
 
-  "name": "Keplr",
-  "description": "Keplr is a browser extension wallet for the Inter blockchain ecosystem.",
-  "version": "0.12.16",
+  "name": "Supercharge!",
+  "description": "Supercharge! is a browser extension wallet for the op stack chains.",
+  "version": "0.1.0",
   "icons": {
     "16": "assets/icon-16.png",
     "48": "assets/icon-48.png",
@@ -12,7 +12,7 @@
 
   "browser_action": {
     "default_popup": "popup.html",
-    "default_title": "Keplr"
+    "default_title": "Supercharge!"
   },
   "background": {
     "page": "background.html",

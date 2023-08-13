@@ -88,9 +88,7 @@ export const FormNamePassword: FunctionComponent<
         {needPassword ? (
           <React.Fragment>
             <TextInput
-              label={intl.formatMessage({
-                id: "pages.register.components.form.name-password.password-label",
-              })}
+              label={"Password"}
               type="password"
               placeholder={intl.formatMessage({
                 id: "pages.register.components.form.name-password.password-placeholder",
@@ -108,9 +106,7 @@ export const FormNamePassword: FunctionComponent<
               error={formState.errors.password?.message}
             />
             <TextInput
-              label={intl.formatMessage({
-                id: "pages.register.components.form.name-password.confirm-password-label",
-              })}
+              label={"Confirm Password"}
               type="password"
               placeholder={intl.formatMessage({
                 id: "pages.register.components.form.name-password.confirm-password-placeholder",

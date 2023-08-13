@@ -285,7 +285,7 @@ export const MainPage: FunctionComponent = observer(() => {
                       }
                     }
                   }}
-                  placeholder={"Search for chain"}
+                  placeholder={"Search for asset or chain"}
                 />
               ) : null}
             </Stack>

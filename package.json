@@ -1,6 +1,6 @@
 {
-  "name": "keplr",
-  "description": "Keplr is a browser extension wallet for the Inter blockchain ecosystem.",
+  "name": "supercharge",
+  "description": "Supercharge! is a browser extension wallet for op stack chains",
   "private": true,
   "workspaces": {
     "packages": [
@@ -56,7 +56,7 @@
     ]
   },
   "keywords": [],
-  "author": "chainapsis",
+  "author": "delivan",
   "license": "Apache-2.0",
   "devDependencies": {
     "@1stg/remark-preset": "^2.0.0",

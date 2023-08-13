@@ -80,7 +80,7 @@ export const FinalizeKeyScene: FunctionComponent<{
     const [candidateAddresses, setCandidateAddresses] = useState<
       {
         chainId: string;
-        bech32Addresses: {
+        addresses: {
           coinType: number;
           address: string;
         }[];
@@ -157,7 +157,7 @@ export const FinalizeKeyScene: FunctionComponent<{
 
         const candidateAddresses: {
           chainId: string;
-          bech32Addresses: {
+          addresses: {
             coinType: number;
             address: string;
           }[];
@@ -179,7 +179,7 @@ export const FinalizeKeyScene: FunctionComponent<{
 
                 candidateAddresses.push({
                   chainId: chainInfo.chainId,
-                  bech32Addresses: res.map((res) => {
+                  addresses: res.map((res) => {
                     return {
                       coinType: res.coinType,
                       address: res.bech32Address,
@@ -199,7 +199,7 @@ export const FinalizeKeyScene: FunctionComponent<{
                 if (account.bech32Address) {
                   candidateAddresses.push({
                     chainId: chainInfo.chainId,
-                    bech32Addresses: [
+                    addresses: [
                       {
                         coinType: chainInfo.bip44.coinType,
                         address: account.bech32Address,
@@ -227,7 +227,7 @@ export const FinalizeKeyScene: FunctionComponent<{
 
           for (const candidateAddress of candidateAddresses) {
             const queries = queriesStore.get(candidateAddress.chainId);
-            for (const bech32Address of candidateAddress.bech32Addresses) {
+            for (const bech32Address of candidateAddress.addresses) {
               // Prepare queries state to avoid UI flicker on next scene.
               promises.push(
                 queries.cosmos.queryAccount

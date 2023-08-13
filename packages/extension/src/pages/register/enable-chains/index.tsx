@@ -127,6 +127,7 @@ export const EnableChainsScene: FunctionComponent<{
         }[];
       }[]
     >(propCandiateAddresses ?? []);
+    console.log("candidateAddresses", candidateAddresses);
 
     useEffectOnce(() => {
       if (candidateAddresses.length === 0) {
