@@ -4,6 +4,7 @@ import { QuerySharedContext } from "../../common";
 import { QueriesSetBase } from "../queries";
 import { ObservableQueryEthereumBalanceRegistry } from "./balance";
 import { ObservableQueryEthereumNonce } from "./nonce";
+import { ObservableQueryEthereumBlockByNumberOrTag } from "./block";
 
 export interface EthereumQueries {
   ethereum: EthereumQueriesImpl;
@@ -36,6 +37,7 @@ export const EthereumQueries = {
 
 export class EthereumQueriesImpl {
   public readonly queryEthereumNonce: DeepReadonly<ObservableQueryEthereumNonce>;
+  public readonly queryEthereumBlockByNumberOrTag: DeepReadonly<ObservableQueryEthereumBlockByNumberOrTag>;
 
   constructor(
     base: QueriesSetBase,
@@ -52,5 +54,12 @@ export class EthereumQueriesImpl {
       chainId,
       chainGetter
     );
+
+    this.queryEthereumBlockByNumberOrTag =
+      new ObservableQueryEthereumBlockByNumberOrTag(
+        sharedContext,
+        chainId,
+        chainGetter
+      );
   }
 }
