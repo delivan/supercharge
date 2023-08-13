@@ -5,6 +5,7 @@ import { AppCurrency, EthSignType } from "@keplr-wallet/types";
 import { DenomHelper } from "@keplr-wallet/common";
 import { parseEther } from "@ethersproject/units";
 import { UnsignedTransaction, serialize } from "@ethersproject/transactions";
+import { BigNumber } from "@ethersproject/bignumber";
 
 export interface EthereumAccount {
   ethereum: EthereumAccountImpl;
@@ -46,21 +47,33 @@ export class EthereumAccountImpl {
   ): Promise<UnsignedTransaction | undefined> {
     const denomHelper = new DenomHelper(currency.coinMinimalDenom);
     if (denomHelper.type === "native") {
-      const ethereumNonceQuery = this.queriesStore
-        .get(this.chainId)
-        .ethereum.queryEthereumNonce.getQueryEthereumNonce(
+      const ethereumQueries = this.queriesStore.get(this.chainId).ethereum;
+      const ethereumNonceQuery =
+        ethereumQueries.queryEthereumNonce.getQueryEthereumNonce(
           this.base.ethereumHexAddress
         );
+      const ethereumBlockQuery =
+        ethereumQueries.queryEthereumBlockByNumberOrTag.getQueryByBlockNumberOrTag(
+          "pending"
+        );
       await ethereumNonceQuery.waitResponse();
+      await ethereumBlockQuery.waitResponse();
+
       const value = parseEther(amount).toNumber();
       const to = recipient;
       const gasLimit = 21000;
       const nonce = ethereumNonceQuery.nonce;
+      const baseFeePerGas = BigNumber.from(
+        ethereumBlockQuery.block?.baseFeePerGas
+      );
+      const maxFeePerGas = baseFeePerGas.mul(2);
 
       const tx: UnsignedTransaction = {
+        type: 2,
         value,
         gasLimit,
-        gasPrice: 4100000000,
+        maxFeePerGas: maxFeePerGas.toString(),
+        maxPriorityFeePerGas: maxFeePerGas.sub(baseFeePerGas).toString(),
         nonce,
         to,
         chainId: Number(this.chainId),
