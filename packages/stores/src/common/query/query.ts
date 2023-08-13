@@ -761,7 +761,11 @@ export abstract class ObservableQuery<T = unknown, E = unknown>
   }
 
   protected getCacheKey(): string {
-    return makeURL(this.baseURL, this.url);
+    const urlForKey = makeURL(this.baseURL, this.url);
+
+    return this.options.body?.["method"]
+      ? `${urlForKey}/${this.options.body?.["method"]}`
+      : urlForKey;
   }
 
   protected async fetchResponse(

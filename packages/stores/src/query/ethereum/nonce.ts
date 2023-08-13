@@ -18,12 +18,10 @@ export class ObservableQueryEthereumNonceInner extends ObservableChainQueryJSONR
     protected readonly ethereumAddress: string,
     protected readonly blockNumber?: string
   ) {
-    super(sharedContext, chainId, chainGetter, "", {
-      jsonrpc: "2.0",
-      method: "eth_getTransactionCount",
-      params: [ethereumAddress, blockNumber ?? "latest"],
-      id: 1,
-    });
+    super(sharedContext, chainId, chainGetter, "eth_getTransactionCount", [
+      ethereumAddress,
+      blockNumber ?? "latest",
+    ]);
 
     makeObservable(this);
   }

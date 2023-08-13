@@ -22,12 +22,10 @@ export class ObservableQueryEthereumBalanceImplParent extends ObservableChainQue
     chainGetter: ChainGetter,
     protected readonly ethereumAddress: string
   ) {
-    super(sharedContext, chainId, chainGetter, "", {
-      jsonrpc: "2.0",
-      method: "eth_getBalance",
-      params: [ethereumAddress, "latest"],
-      id: 1,
-    });
+    super(sharedContext, chainId, chainGetter, "eth_getBalance", [
+      ethereumAddress,
+      "latest",
+    ]);
 
     makeObservable(this);
   }

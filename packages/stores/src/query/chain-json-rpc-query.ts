@@ -14,12 +14,20 @@ export class ObservableChainQueryJSONRPC<
     sharedContext: QuerySharedContext,
     chainId: string,
     chainGetter: ChainGetter,
-    url: string,
-    body: Record<string, any>
+    method: string,
+    params: any[]
   ) {
     const chainInfo = chainGetter.getChain(chainId);
 
-    super(sharedContext, chainInfo.rpc, url, { method: "POST", body });
+    super(sharedContext, chainInfo.rpc, "", {
+      method: "POST",
+      body: {
+        jsonrpc: "2.0",
+        method,
+        params,
+        id: 1,
+      },
+    });
 
     this._chainId = chainId;
     this.chainGetter = chainGetter;
