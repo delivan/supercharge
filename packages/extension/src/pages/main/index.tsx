@@ -11,20 +11,17 @@ import { HeaderLayout } from "../../layouts/header";
 import { ProfileButton } from "../../layouts/header/components";
 import {
   Buttons,
-  ClaimAll,
   MenuBar,
-  StringToggle,
   TabStatus,
   CopyAddress,
   CopyAddressModal,
   IBCTransferView,
   BuyCryptoModal,
-  StakeWithKeplrDashboardButton,
 } from "./components";
 import { Stack } from "../../components/stack";
 import { CoinPretty, PricePretty } from "@keplr-wallet/unit";
 import { ChainInfo } from "@keplr-wallet/types";
-import { ArrowTopRightOnSquareIcon, MenuIcon } from "../../components/icon";
+import { MenuIcon } from "../../components/icon";
 import { Box } from "../../components/box";
 import { Modal } from "../../components/modal";
 import { DualChart } from "./components/chart";
@@ -36,12 +33,9 @@ import { StakedTabView } from "./staked";
 import { SearchTextInput } from "../../components/input";
 import { useSpringValue } from "@react-spring/web";
 import { defaultSpringConfig } from "../../styles/spring";
-import { Columns } from "../../components/column";
-import { Tooltip } from "../../components/tooltip";
-import { Image } from "../../components/image";
 import { QueryError } from "@keplr-wallet/stores";
 import { Skeleton } from "../../components/skeleton";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { useGlobarSimpleBar } from "../../hooks/global-simplebar";
 import { useTheme } from "styled-components";
 
@@ -62,36 +56,14 @@ export const useIsNotReady = () => {
 };
 
 export const MainPage: FunctionComponent = observer(() => {
-  const {
-    analyticsStore,
-    keyRingStore,
-    hugeQueriesStore,
-    uiConfigStore,
-    chainStore,
-    accountStore,
-    queriesStore,
-  } = useStore();
+  const { analyticsStore, keyRingStore, hugeQueriesStore, uiConfigStore } =
+    useStore();
 
   const isNotReady = useIsNotReady();
   const intl = useIntl();
   const theme = useTheme();
 
-  const [tabStatus, setTabStatus] = React.useState<TabStatus>("available");
-
-  const icnsPrimaryName = (() => {
-    if (
-      uiConfigStore.icnsInfo &&
-      chainStore.hasChain(uiConfigStore.icnsInfo.chainId)
-    ) {
-      const queries = queriesStore.get(uiConfigStore.icnsInfo.chainId);
-      const icnsQuery = queries.icns.queryICNSNames.getQueryContract(
-        uiConfigStore.icnsInfo.resolverContractAddress,
-        accountStore.getAccount(uiConfigStore.icnsInfo.chainId).bech32Address
-      );
-
-      return icnsQuery.primaryName.split(".")[0];
-    }
-  })();
+  const [tabStatus] = React.useState<TabStatus>("available");
 
   const availableTotalPrice = useMemo(() => {
     let result: PricePretty | undefined;
@@ -190,30 +162,6 @@ export const MainPage: FunctionComponent = observer(() => {
       title={(() => {
         const name = keyRingStore.selectedKeyInfo?.name || "Keplr Account";
 
-        if (icnsPrimaryName !== "") {
-          return (
-            <Columns sum={1} alignY="center" gutter="0.25rem">
-              <Box>{name}</Box>
-
-              <Tooltip
-                content={
-                  <div style={{ whiteSpace: "nowrap" }}>
-                    ICNS : {icnsPrimaryName}
-                  </div>
-                }
-              >
-                <Image
-                  alt="icns-icon"
-                  src={require(theme.mode === "light"
-                    ? "../../public/assets/img/icns-icon-light.png"
-                    : "../../public/assets/img/icns-icon.png")}
-                  style={{ width: "1rem", height: "1rem" }}
-                />
-              </Tooltip>
-            </Columns>
-          );
-        }
-
         return name;
       })()}
       left={
@@ -229,11 +177,6 @@ export const MainPage: FunctionComponent = observer(() => {
     >
       <Box paddingX="0.75rem" paddingBottom="1.5rem">
         <Stack gutter="0.75rem">
-          <StringToggle
-            tabStatus={tabStatus}
-            setTabStatus={setTabStatus}
-            isNotReady={isNotReady}
-          />
           <CopyAddress
             onClick={() => {
               analyticsStore.logEvent("click_copyAddress");
@@ -306,49 +249,6 @@ export const MainPage: FunctionComponent = observer(() => {
             />
           ) : null}
 
-          {tabStatus === "staked" && !isNotReady ? (
-            <StakeWithKeplrDashboardButton
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                analyticsStore.logEvent("click_keplrDashboard", {
-                  tabName: tabStatus,
-                });
-
-                browser.tabs.create({
-                  url: "https://wallet.keplr.app",
-                });
-              }}
-            >
-              <FormattedMessage id="page.main.chart.stake-with-keplr-dashboard-button" />
-              <Box color={ColorPalette["gray-300"]} marginLeft="0.5rem">
-                <ArrowTopRightOnSquareIcon width="1rem" height="1rem" />
-              </Box>
-            </StakeWithKeplrDashboardButton>
-          ) : null}
-
-          <ClaimAll isNotReady={isNotReady} />
-
-          {tabStatus === "available" && !isNotReady ? (
-            <StakeWithKeplrDashboardButton
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                analyticsStore.logEvent("click_keplrDashboard", {
-                  tabName: tabStatus,
-                });
-
-                browser.tabs.create({
-                  url: "https://wallet.keplr.app",
-                });
-              }}
-            >
-              <FormattedMessage id="page.main.chart.manage-portfolio-in-keplr-dashboard" />
-              <Box color={ColorPalette["gray-300"]} marginLeft="0.5rem">
-                <ArrowTopRightOnSquareIcon width="1rem" height="1rem" />
-              </Box>
-            </StakeWithKeplrDashboardButton>
-          ) : null}
           {!isNotReady ? (
             <Stack gutter="0.75rem">
               {tabStatus === "available" ? (

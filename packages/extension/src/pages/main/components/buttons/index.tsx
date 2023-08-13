@@ -13,7 +13,7 @@ export const Buttons: FunctionComponent<{
   onClickDeposit: () => void;
   onClickBuy: () => void;
   isNotReady?: boolean;
-}> = observer(({ onClickDeposit, onClickBuy, isNotReady }) => {
+}> = observer(({ onClickDeposit, isNotReady }) => {
   const { hugeQueriesStore } = useStore();
   const navigate = useNavigate();
   const intl = useIntl();
@@ -34,18 +34,6 @@ export const Buttons: FunctionComponent<{
               })}
               color="secondary"
               onClick={onClickDeposit}
-            />
-          </Skeleton>
-        </Column>
-
-        <Column weight={1}>
-          <Skeleton type="button" isNotReady={isNotReady}>
-            <Button
-              text={intl.formatMessage({
-                id: "page.main.components.buttons.buy-button",
-              })}
-              color="secondary"
-              onClick={onClickBuy}
             />
           </Skeleton>
         </Column>
