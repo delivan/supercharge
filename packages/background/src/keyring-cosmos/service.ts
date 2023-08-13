@@ -84,6 +84,7 @@ export class KeyRingCosmosService {
       bech32Address: bech32Address.toBech32(
         chainInfo.bech32Config.bech32PrefixAccAddr
       ),
+      ethereumHexAddress: new Bech32Address(pubKey.getEthAddress()).toHex(true),
       isNanoLedger: keyInfo.type === "ledger",
       // TODO
       isKeystone: false,

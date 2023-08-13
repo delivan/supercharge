@@ -46,7 +46,8 @@ export const AddressBookModal: FunctionComponent<{
     memoConfig,
     permitSelfKeyInfo,
   }) => {
-    const { analyticsStore, uiConfigStore, keyRingStore } = useStore();
+    const { analyticsStore, chainStore, uiConfigStore, keyRingStore } =
+      useStore();
     const intl = useIntl();
     const theme = useTheme();
 
@@ -129,8 +130,9 @@ export const AddressBookModal: FunctionComponent<{
 
             return {
               name: account.name,
-              address: account.bech32Address,
-
+              address: chainStore.getChain(recipientConfig.chainId).evm
+                ? account.ethereumHexAddress
+                : account.bech32Address,
               isSelf,
             };
           });

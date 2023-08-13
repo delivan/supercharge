@@ -55,6 +55,7 @@ export type KeplrGetKeyWalletCoonectV1Response = {
   address: string;
   algo: string;
   bech32Address: string;
+  ethereumHexAddress: string;
   isKeystone: boolean;
   isNanoLedger: boolean;
   name: string;
@@ -70,6 +71,7 @@ export type KeplrKeystoreMayChangedEventParam = {
     chainIdentifier: string;
     address: string;
     bech32Address: string;
+    ehtereumHexAddress: string;
     pubKey: string;
   }[];
 };
@@ -144,6 +146,7 @@ export class KeplrWalletConnectV1 implements Keplr {
           address: mayChangedKey.address,
           algo: param.algo,
           bech32Address: mayChangedKey.bech32Address,
+          ethereumHexAddress: mayChangedKey.ehtereumHexAddress,
           isKeystone: param.isKeystone,
           isNanoLedger: param.isNanoLedger,
           name: param.name,
@@ -303,6 +306,7 @@ export class KeplrWalletConnectV1 implements Keplr {
         address: Buffer.from(lastSeenKey.address, "hex"),
         algo: lastSeenKey.algo,
         bech32Address: lastSeenKey.bech32Address,
+        ethereumHexAddress: lastSeenKey.ethereumHexAddress,
         isKeystone: lastSeenKey.isKeystone,
         isNanoLedger: lastSeenKey.isNanoLedger,
         name: lastSeenKey.name,
@@ -325,6 +329,7 @@ export class KeplrWalletConnectV1 implements Keplr {
       address: Buffer.from(response.address, "hex"),
       algo: response.algo,
       bech32Address: response.bech32Address,
+      ethereumHexAddress: response.ethereumHexAddress,
       isKeystone: response.isKeystone,
       isNanoLedger: response.isNanoLedger,
       name: response.name,
