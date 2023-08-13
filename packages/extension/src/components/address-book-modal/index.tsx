@@ -4,7 +4,6 @@ import { Box } from "../box";
 import { ColorPalette } from "../../styles";
 import { BaseTypography, Subtitle1, Subtitle3 } from "../typography";
 import { Gutter } from "../gutter";
-import { HorizontalRadioGroup } from "../radio-group";
 import { YAxis } from "../axis";
 import { Stack } from "../stack";
 import { observer } from "mobx-react-lite";
@@ -46,12 +45,11 @@ export const AddressBookModal: FunctionComponent<{
     memoConfig,
     permitSelfKeyInfo,
   }) => {
-    const { analyticsStore, chainStore, uiConfigStore, keyRingStore } =
-      useStore();
+    const { chainStore, uiConfigStore, keyRingStore } = useStore();
     const intl = useIntl();
     const theme = useTheme();
 
-    const [type, setType] = useState<Type>("recent");
+    const [type] = useState<Type>("accounts");
 
     const [recents, setRecents] = useState<RecentSendHistory[]>([]);
     const [accounts, setAccounts] = useState<
@@ -159,40 +157,6 @@ export const AddressBookModal: FunctionComponent<{
               <FormattedMessage id="components.address-book-modal.title" />
             </Subtitle1>
           </Box>
-
-          <Gutter size="0.75rem" />
-
-          <YAxis alignX="left">
-            <HorizontalRadioGroup
-              items={[
-                {
-                  key: "recent",
-                  text: intl.formatMessage({
-                    id: "components.address-book-modal.recent-tab",
-                  }),
-                },
-                {
-                  key: "contacts",
-                  text: intl.formatMessage({
-                    id: "components.address-book-modal.contacts-tab",
-                  }),
-                },
-                {
-                  key: "accounts",
-                  text: intl.formatMessage({
-                    id: "components.address-book-modal.my-account-tab",
-                  }),
-                },
-              ]}
-              selectedKey={type}
-              onSelect={(key) => {
-                analyticsStore.logEvent("click_addressBook_tab", {
-                  tabName: key,
-                });
-                setType(key as Type);
-              }}
-            />
-          </YAxis>
 
           <Gutter size="0.75rem" />
 

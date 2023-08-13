@@ -6,7 +6,6 @@ import { Button } from "../../components/button";
 import { useInteractionInfo } from "../../hooks";
 import { Gutter } from "../../components/gutter";
 import { Box } from "../../components/box";
-import { TextButton } from "../../components/button-text";
 import { ColorPalette } from "../../styles";
 import { H1, Subtitle4 } from "../../components/typography";
 import { Tooltip } from "../../components/tooltip";
@@ -164,17 +163,7 @@ export const UnlockPage: FunctionComponent = observer(() => {
           }
         }}
       >
-        <Box alignX="center">
-          <Gutter size="6rem" />
-
-          <div
-            ref={animContainerRef}
-            style={{
-              width: "12rem",
-              height: "9.5rem",
-            }}
-          />
-        </Box>
+        <Gutter size="6rem" />
 
         <ParagraphSection
           needMigration={keyRingStore.needMigration}
@@ -275,25 +264,6 @@ export const UnlockPage: FunctionComponent = observer(() => {
             />
           );
         })()}
-
-        <Gutter size="3.125rem" />
-
-        {!isMigrationSecondPhase && !keyRingStore.isMigrating ? (
-          <TextButton
-            text={intl.formatMessage({
-              id: "page.unlock.forgot-password-button",
-            })}
-            type="button"
-            size="small"
-            color="faint"
-            onClick={() => {
-              browser.tabs.create({
-                url: `https://help.keplr.app/faq`,
-              });
-            }}
-            style={{ width: "100%", color: ColorPalette["gray-300"] }}
-          />
-        ) : null}
       </form>
     </Box>
   );

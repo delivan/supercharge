@@ -19,7 +19,6 @@ import { XAxis, YAxis } from "../../../../components/axis";
 import { Bech32Address, ChainIdHelper } from "@keplr-wallet/cosmos";
 import { ChainImageFallback, Image } from "../../../../components/image";
 import { useFocusOnMount } from "../../../../hooks/use-focus-on-mount";
-import { Tag } from "../../../../components/tag";
 import { FormattedMessage, useIntl } from "react-intl";
 import SimpleBar from "simplebar-react";
 
@@ -497,20 +496,6 @@ export const EthereumAddressItem: FunctionComponent<{
             >
               {chainInfo.evm?.chainName ?? chainInfo.chainName}
             </Subtitle3>
-
-            <Gutter size="0.25rem" />
-
-            {/* Make evm tag not occupy spaces */}
-            <Box position="relative" height="1px" alignY="center">
-              <Box position="absolute">
-                <Tag
-                  text={intl.formatMessage({
-                    id: "page.main.components.copy-address-modal.evm-address-tag",
-                  })}
-                  whiteSpace="nowrap"
-                />
-              </Box>
-            </Box>
           </XAxis>
 
           <Gutter size="0.25rem" />

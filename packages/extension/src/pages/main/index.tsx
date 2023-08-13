@@ -13,7 +13,6 @@ import {
   Buttons,
   MenuBar,
   TabStatus,
-  CopyAddress,
   CopyAddressModal,
   IBCTransferView,
   BuyCryptoModal,
@@ -167,7 +166,16 @@ export const MainPage: FunctionComponent = observer(() => {
       left={
         <Box
           paddingLeft="1rem"
-          onClick={() => setIsOpenMenu(true)}
+          onClick={() =>
+            keyRingStore.selectedKeyInfo &&
+            browser.tabs
+              .create({
+                url: `/register.html#?route=enable-chains&vaultId=${keyRingStore.selectedKeyInfo.id}&skipWelcome=true`,
+              })
+              .then(() => {
+                window.close();
+              })
+          }
           cursor="pointer"
         >
           <MenuIcon />
@@ -177,13 +185,6 @@ export const MainPage: FunctionComponent = observer(() => {
     >
       <Box paddingX="0.75rem" paddingBottom="1.5rem">
         <Stack gutter="0.75rem">
-          <CopyAddress
-            onClick={() => {
-              analyticsStore.logEvent("click_copyAddress");
-              setIsOpenCopyAddress(true);
-            }}
-            isNotReady={isNotReady}
-          />
           <Box position="relative">
             <DualChart
               first={{
@@ -284,9 +285,7 @@ export const MainPage: FunctionComponent = observer(() => {
                       }
                     }
                   }}
-                  placeholder={intl.formatMessage({
-                    id: "page.main.search-placeholder",
-                  })}
+                  placeholder={"Search for chain"}
                 />
               ) : null}
             </Stack>

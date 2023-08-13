@@ -1,15 +1,12 @@
 import React, { FunctionComponent } from "react";
 import styled, { useTheme } from "styled-components";
 import { ColorPalette } from "../../../../styles";
-import { CloseIcon, LinkIcon } from "../../../../components/icon";
+import { CloseIcon } from "../../../../components/icon";
 import { Box } from "../../../../components/box";
-import { Stack } from "../../../../components/stack";
-import { useNavigate } from "react-router";
 import { Gutter } from "../../../../components/gutter";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../../../stores";
-import { Button2, H3 } from "../../../../components/typography";
-import { XAxis } from "../../../../components/axis";
+import { H3 } from "../../../../components/typography";
 import { Bleed } from "../../../../components/bleed";
 import { FormattedMessage } from "react-intl";
 
@@ -33,7 +30,6 @@ export const MenuBar: FunctionComponent<{
   const { analyticsStore, keyRingStore } = useStore();
 
   const theme = useTheme();
-  const navigate = useNavigate();
 
   return (
     <Box
@@ -73,119 +69,24 @@ export const MenuBar: FunctionComponent<{
       </Bleed>
       <Gutter size="1.25rem" />
 
-      <Stack gutter="1.5rem">
-        <Styles.MenuItem
-          onClick={(e) => {
-            e.preventDefault();
-
-            if (keyRingStore.selectedKeyInfo) {
-              analyticsStore.logEvent("click_menu_manageChainVisibility");
-              browser.tabs
-                .create({
-                  url: `/register.html#?route=enable-chains&vaultId=${keyRingStore.selectedKeyInfo.id}&skipWelcome=true`,
-                })
-                .then(() => {
-                  window.close();
-                });
-            }
-          }}
-        >
-          <FormattedMessage id="page.main.components.menu-bar.manage-chain-visibility-title" />
-        </Styles.MenuItem>
-
-        <Gutter size="1rem" />
-
-        <Box
-          width="6.5rem"
-          style={{
-            border: `1px solid ${
-              theme.mode === "light"
-                ? ColorPalette["gray-100"]
-                : ColorPalette["gray-400"]
-            }`,
-          }}
-        />
-
-        <Gutter size="1rem" />
-
-        <Styles.MenuItem onClick={() => navigate("/setting/contacts/list")}>
-          <FormattedMessage id="page.main.components.menu-bar.my-contacts-title" />
-        </Styles.MenuItem>
-
-        <Styles.MenuItem onClick={() => navigate("/setting/token/list")}>
-          <FormattedMessage id="page.main.components.menu-bar.add-token-title" />
-        </Styles.MenuItem>
-
-        <Styles.MenuItem
-          onClick={() => {
-            navigate("/setting");
-          }}
-        >
-          <FormattedMessage id="page.main.components.menu-bar.setting-title" />
-        </Styles.MenuItem>
-      </Stack>
-
-      <Styles.Flex1 />
-
       <Styles.MenuItem
         onClick={(e) => {
           e.preventDefault();
 
-          keyRingStore.lock();
+          if (keyRingStore.selectedKeyInfo) {
+            analyticsStore.logEvent("click_menu_manageChainVisibility");
+            browser.tabs
+              .create({
+                url: `/register.html#?route=enable-chains&vaultId=${keyRingStore.selectedKeyInfo.id}&skipWelcome=true`,
+              })
+              .then(() => {
+                window.close();
+              });
+          }
         }}
       >
-        <FormattedMessage id="page.main.components.menu-bar.lock-wallet-title" />
+        <FormattedMessage id="page.main.components.menu-bar.manage-chain-visibility-title" />
       </Styles.MenuItem>
-
-      <Gutter size="1rem" />
-
-      <Box
-        width="6.5rem"
-        style={{
-          border: `1px solid ${
-            theme.mode === "light"
-              ? ColorPalette["gray-100"]
-              : ColorPalette["gray-400"]
-          }`,
-        }}
-      />
-
-      <Gutter size="1rem" />
-
-      <Box
-        cursor="pointer"
-        onClick={(e) => {
-          e.preventDefault();
-
-          browser.tabs.create({
-            url: "https://chains.keplr.app/",
-          });
-        }}
-      >
-        <XAxis alignY="center">
-          <Button2
-            color={
-              theme.mode === "light"
-                ? ColorPalette["gray-200"]
-                : ColorPalette["gray-300"]
-            }
-          >
-            <FormattedMessage id="page.main.components.menu-bar.go-to-keplr-chain-registry" />
-          </Button2>
-
-          <Gutter size="0.25rem" />
-
-          <LinkIcon
-            width="1.125rem"
-            height="1.125rem"
-            color={
-              theme.mode === "light"
-                ? ColorPalette["gray-200"]
-                : ColorPalette["gray-300"]
-            }
-          />
-        </XAxis>
-      </Box>
     </Box>
   );
 });

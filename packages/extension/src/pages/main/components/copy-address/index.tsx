@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useState } from "react";
 import styled from "styled-components";
 import { ColorPalette } from "../../../../styles";
 import { Caption1 } from "../../../../components/typography";
@@ -6,7 +6,6 @@ import { CopyOutlineIcon } from "../../../../components/icon";
 import { XAxis, YAxis } from "../../../../components/axis";
 import { Gutter } from "../../../../components/gutter";
 import { Skeleton } from "../../../../components/skeleton";
-import { FormattedMessage } from "react-intl";
 
 export const CopyAddressRadius = "16rem";
 
@@ -16,6 +15,7 @@ const Styles = {
     flex-direction: row;
     align-items: center;
 
+    height: 23px;
     padding: 3.5px 0.5rem;
 
     background-color: ${(props) =>
@@ -48,16 +48,25 @@ export const CopyAddress: FunctionComponent<{
   onClick: () => void;
   isNotReady?: boolean;
 }> = ({ onClick, isNotReady }) => {
+  const [isCopied, setIsCopied] = useState(false);
+  const handleClick = () => {
+    if (!isCopied) {
+      onClick();
+      setIsCopied(true);
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+    }
+  };
+
   return (
     <YAxis alignX="center">
       <XAxis alignY="center">
         <Skeleton type="copyAddress" isNotReady={isNotReady}>
-          <Styles.Container onClick={onClick}>
-            <Caption1>
-              <FormattedMessage id="page.main.components.copy-address.title" />
-            </Caption1>
+          <Styles.Container onClick={handleClick}>
+            <Caption1>{isCopied ? "Copied!" : "Copy my address"}</Caption1>
             <Gutter size="2px" />
-            <CopyOutlineIcon width="1rem" height="1rem" />
+            {!isCopied && <CopyOutlineIcon width="1rem" height="1rem" />}
           </Styles.Container>
         </Skeleton>
       </XAxis>

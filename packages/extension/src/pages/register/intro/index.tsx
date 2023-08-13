@@ -33,7 +33,7 @@ export const RegisterIntroScene: FunctionComponent = observer(() => {
           size="large"
           color="secondary"
           onClick={() => {
-            sceneTransition.push("existing-user");
+            sceneTransition.push("recover-mnemonic");
           }}
         />
       </Stack>

@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import { RegisterSceneBox } from "../components/register-scene-box";
 import { Button } from "../../../components/button";
-import { HorizontalRadioGroup } from "../../../components/radio-group";
 import { Gutter } from "../../../components/gutter";
 import { Box } from "../../../components/box";
 import { useRegisterHeader } from "../components/header";
@@ -26,6 +25,7 @@ import { TextInput, TextInputProps } from "../../../components/input";
 import { Mnemonic } from "@keplr-wallet/crypto";
 import { Buffer } from "buffer/";
 import { FormattedMessage, useIntl } from "react-intl";
+import { H2 } from "../../../components/typography";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const bip39 = require("bip39");
 
@@ -246,22 +246,7 @@ export const RecoverMnemonicScene: FunctionComponent = observer(() => {
         }}
       >
         <Box alignX="center">
-          <HorizontalRadioGroup
-            size="large"
-            selectedKey={seedType}
-            onSelect={(key) => {
-              setSeedType(key as SeedType);
-            }}
-            items={[
-              {
-                key: "private-key",
-                text: intl.formatMessage({
-                  id: "pages.register.recover-mnemonic.private-key-tab",
-                }),
-              },
-            ]}
-            itemMinWidth="6.25rem"
-          />
+          <H2>Enter your private key</H2>
         </Box>
         <Gutter size="1rem" />
 
