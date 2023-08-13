@@ -19,7 +19,9 @@
     "@keplr-wallet/provider-mock": "0.12.16"
   },
   "dependencies": {
+    "@ethersproject/address": "^5.7.0",
     "@ethersproject/bignumber": "^5.7.0",
+    "@ethersproject/contracts": "^5.7.0",
     "@ethersproject/transactions": "^5.7.0",
     "@ethersproject/units": "^5.7.0",
     "@keplr-wallet/background": "0.12.16",
