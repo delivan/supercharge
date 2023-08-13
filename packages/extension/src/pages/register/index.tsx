@@ -19,7 +19,6 @@ import { VerifyMnemonicScene } from "./verify-mnemonic";
 import { RecoverMnemonicScene } from "./recover-mnemonic";
 import { RegisterIntroNewUserScene } from "./intro-new-user";
 import {
-  RegisterHeader,
   RegisterHeaderProvider,
   useRegisterHeaderContext,
 } from "./components/header";
@@ -169,7 +168,6 @@ const RegisterPageImpl: FunctionComponent = observer(() => {
 
   return (
     <RegisterHeaderProvider {...headerContext}>
-      <RegisterHeader sceneRef={sceneRef} />
       <Box
         position="relative"
         marginX="auto"
@@ -200,7 +198,7 @@ const RegisterPageImpl: FunctionComponent = observer(() => {
             {
               name: "existing-user",
               element: RegisterIntroExistingUserScene,
-              width: "53.75rem",
+              width: "33.75rem",
             },
             {
               name: "new-mnemonic",

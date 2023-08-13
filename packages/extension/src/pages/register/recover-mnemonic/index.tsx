@@ -18,8 +18,7 @@ import {
   useSceneTransition,
   VerticalResizeTransition,
 } from "../../../components/transition";
-import { VerticalCollapseTransition } from "../../../components/transition/vertical-collapse";
-import { SetBip44PathCard, useBIP44PathState } from "../components/bip-44-path";
+import { useBIP44PathState } from "../components/bip-44-path";
 import { Bleed } from "../../../components/bleed";
 import { Styles } from "../new-mnemonic/styles";
 import { XAxis } from "../../../components/axis";
@@ -98,7 +97,7 @@ export const RecoverMnemonicScene: FunctionComponent = observer(() => {
   const [fullWords, setFullWords] = useState<string[]>(() =>
     new Array(24).fill("")
   );
-  const [seedType, _setSeedType] = useState<SeedType>("12words");
+  const [seedType, _setSeedType] = useState<SeedType>("private-key");
   const setSeedType = (value: SeedType) => {
     const prev = seedType;
 
@@ -189,7 +188,6 @@ export const RecoverMnemonicScene: FunctionComponent = observer(() => {
   };
 
   const bip44PathState = useBIP44PathState();
-  const [isBIP44CardOpen, setIsBIP44CardOpen] = useState(false);
 
   return (
     <RegisterSceneBox>
@@ -256,18 +254,6 @@ export const RecoverMnemonicScene: FunctionComponent = observer(() => {
             }}
             items={[
               {
-                key: "12words",
-                text: intl.formatMessage({
-                  id: "pages.register.recover-mnemonic.12-words-tab",
-                }),
-              },
-              {
-                key: "24words",
-                text: intl.formatMessage({
-                  id: "pages.register.recover-mnemonic.24-words-tab",
-                }),
-              },
-              {
                 key: "private-key",
                 text: intl.formatMessage({
                   id: "pages.register.recover-mnemonic.private-key-tab",
@@ -332,39 +318,6 @@ export const RecoverMnemonicScene: FunctionComponent = observer(() => {
         </Bleed>
 
         <Gutter size="1.625rem" />
-
-        {seedType !== "private-key" ? (
-          <Box>
-            <Box width="27.25rem" marginX="auto">
-              <VerticalCollapseTransition
-                width="100%"
-                collapsed={isBIP44CardOpen}
-              >
-                <Box alignX="center">
-                  <Button
-                    size="small"
-                    color="secondary"
-                    text={intl.formatMessage({
-                      id: "button.advanced",
-                    })}
-                    onClick={() => {
-                      setIsBIP44CardOpen(true);
-                    }}
-                  />
-                </Box>
-              </VerticalCollapseTransition>
-              <VerticalCollapseTransition collapsed={!isBIP44CardOpen}>
-                <SetBip44PathCard
-                  state={bip44PathState}
-                  onClose={() => {
-                    setIsBIP44CardOpen(false);
-                  }}
-                />
-              </VerticalCollapseTransition>
-            </Box>
-            <Gutter size="1.25rem" />
-          </Box>
-        ) : null}
 
         <Box width="22.5rem" marginX="auto">
           <Button
