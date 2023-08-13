@@ -49,7 +49,10 @@ export class HugeQueriesStore {
 
     for (const chainInfo of this.chainStore.chainInfosInUI) {
       const account = this.accountStore.getAccount(chainInfo.chainId);
-      if (account.bech32Address === "") {
+      if (
+        account.bech32Address === "" ||
+        (chainInfo.evm && account.ethereumHexAddress === "")
+      ) {
         continue;
       }
 

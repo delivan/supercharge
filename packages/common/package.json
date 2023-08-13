@@ -16,6 +16,7 @@
     "lint-fix": "eslint --fix \"src/**/*\" && prettier --write \"src/**/*\""
   },
   "dependencies": {
+    "@ethersproject/contracts": "^5.7.0",
     "@keplr-wallet/crypto": "0.12.16",
     "@keplr-wallet/types": "0.12.16",
     "buffer": "^6.0.3",

@@ -127,9 +127,9 @@ export class ObservableQuerySecret20BalanceRegistry implements BalanceRegistry {
     chainId: string,
     chainGetter: ChainGetter,
     bech32Address: string,
-    minimalDenom: string
+    currency: AppCurrency
   ): IObservableQueryBalanceImpl | undefined {
-    const denomHelper = new DenomHelper(minimalDenom);
+    const denomHelper = new DenomHelper(currency.coinMinimalDenom);
     if (denomHelper.type === "secret20") {
       return new ObservableQuerySecret20BalanceImpl(
         this.sharedContext,

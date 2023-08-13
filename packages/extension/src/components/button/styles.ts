@@ -38,13 +38,13 @@ export const getLoadingColor = (
 ): string => {
   switch (buttonColor) {
     case "primary":
-      return ColorPalette["blue-200"];
+      return "#FFC75B";
     case "secondary":
-      return ColorPalette["gray-200"];
+      return "#FF7683";
     case "danger":
       return ColorPalette["red-400"];
     default:
-      return ColorPalette["blue-200"];
+      return "#FFC75B";
   }
 };
 
@@ -62,9 +62,9 @@ const buttonStyleFromColorAndMode: Record<
     light: {
       fill: {
         enabled: css`
-          background-color: ${ColorPalette["blue-400"]};
+          background-color: #ffc75b;
 
-          ${makeTextAndSvgColor(ColorPalette["white"])}
+          ${makeTextAndSvgColor(ColorPalette["black"])}
 
           :hover {
             ::after {
@@ -74,23 +74,23 @@ const buttonStyleFromColorAndMode: Record<
           }
         `,
         disabled: css`
-          background-color: ${ColorPalette["blue-400"]};
+          background-color: #ffc75b;
 
           ::after {
             background-color: ${ColorPalette["gray-300"]};
             opacity: 0.2;
           }
 
-          ${makeTextAndSvgColor(ColorPalette["white"])}
+          ${makeTextAndSvgColor(ColorPalette["black"])}
         `,
       },
     },
     dark: {
       fill: {
         enabled: css`
-          background-color: ${ColorPalette["blue-400"]};
+          background-color: #ffc75b;
 
-          ${makeTextAndSvgColor(ColorPalette["white"])}
+          ${makeTextAndSvgColor(ColorPalette["black"])}
 
           :hover {
             ::after {
@@ -100,14 +100,14 @@ const buttonStyleFromColorAndMode: Record<
           }
         `,
         disabled: css`
-          background-color: ${ColorPalette["blue-400"]};
+          background-color: #ffc75b;
 
           ::after {
             background-color: ${ColorPalette["gray-600"]};
             opacity: 0.5;
           }
 
-          ${makeTextAndSvgColor(ColorPalette["white"])}
+          ${makeTextAndSvgColor(ColorPalette["black"])}
         `,
       },
     },
@@ -116,7 +116,7 @@ const buttonStyleFromColorAndMode: Record<
     light: {
       fill: {
         enabled: css`
-          background-color: ${ColorPalette["blue-50"]};
+          background-color: #ffc75b;
 
           ${makeTextAndSvgColor(ColorPalette["blue-400"])}
 

@@ -1,5 +1,6 @@
 import { Buffer } from "buffer/";
 import { Hash } from "@keplr-wallet/crypto";
+import { ContractInterface } from "@ethersproject/contracts";
 
 export class DenomHelper {
   static ibcDenom(
@@ -27,8 +28,12 @@ export class DenomHelper {
 
   protected readonly _type: string;
   protected readonly _contractAddress: string;
+  protected readonly _contractABI?: ContractInterface;
 
-  constructor(protected readonly _denom: string) {
+  constructor(
+    protected readonly _denom: string,
+    contractABI?: ContractInterface
+  ) {
     // Remember that the coin's actual denom should start with "type:contractAddress:denom" if it is for the token based on contract.
     const split = this.denom.split(/(\w+):(\w+):(.+)/).filter(Boolean);
     if (split.length !== 1 && split.length !== 3) {
@@ -37,6 +42,7 @@ export class DenomHelper {
 
     this._type = split.length === 3 ? split[0] : "";
     this._contractAddress = split.length === 3 ? split[1] : "";
+    this._contractABI = contractABI;
   }
 
   get denom(): string {
@@ -49,5 +55,9 @@ export class DenomHelper {
 
   get contractAddress(): string {
     return this._contractAddress;
+  }
+
+  get contractABI(): ContractInterface | undefined {
+    return this._contractABI;
   }
 }

@@ -6,6 +6,7 @@ import { AppCurrency } from "@keplr-wallet/types";
 import { HasMapStore, IObservableQuery, QuerySharedContext } from "../common";
 import { computedFn } from "mobx-utils";
 import { ObservableQueryEthereumBalanceRegistry } from "./ethereum";
+import { ObservableQueryEthereumERC20BalanceRegistry } from "./evm/erc20-balance";
 
 export interface IObservableQueryBalanceImpl extends IObservableQuery {
   balance: CoinPretty;
@@ -17,7 +18,7 @@ export interface BalanceRegistry {
     chainId: string,
     chainGetter: ChainGetter,
     address: string,
-    minimalDenom: string
+    currency: AppCurrency
   ): IObservableQueryBalanceImpl | undefined;
 }
 
@@ -54,10 +55,14 @@ export class ObservableQueryBalancesImplMap {
       key = currency.coinMinimalDenom + "/" + currency.viewingKey;
     }
 
+    if ("contractAddress" in currency && "contractABI" in currency) {
+      key = currency.coinMinimalDenom + "/" + currency.contractAddress;
+    }
+
     if (!this.balanceImplMap.has(key)) {
       runInAction(() => {
         let balanceImpl: IObservableQueryBalanceImpl | undefined;
-        for (const registry of this.balanceRegistries) {
+        this.balanceRegistries.forEach((registry) => {
           // TODO: Should be refactored.
           if (
             chainInfo.evm &&
@@ -67,23 +72,35 @@ export class ObservableQueryBalancesImplMap {
               this.chainId,
               this.chainGetter,
               this.address,
-              currency.coinMinimalDenom
+              currency
             );
           } else if (
-            !chainInfo.evm &&
-            !(registry instanceof ObservableQueryEthereumBalanceRegistry)
+            chainInfo.evm &&
+            registry instanceof ObservableQueryEthereumERC20BalanceRegistry &&
+            "contractAddress" in currency &&
+            "contractABI" in currency
           ) {
             balanceImpl = registry.getBalanceImpl(
               this.chainId,
               this.chainGetter,
               this.address,
-              currency.coinMinimalDenom
+              currency
+            );
+          } else if (
+            !chainInfo.evm &&
+            !(
+              registry instanceof ObservableQueryEthereumBalanceRegistry ||
+              registry instanceof ObservableQueryEthereumERC20BalanceRegistry
+            )
+          ) {
+            balanceImpl = registry.getBalanceImpl(
+              this.chainId,
+              this.chainGetter,
+              this.address,
+              currency
             );
           }
-          if (balanceImpl) {
-            break;
-          }
-        }
+        });
 
         if (balanceImpl) {
           this.balanceImplMap.set(key, balanceImpl);

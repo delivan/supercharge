@@ -8,3 +8,4 @@ export * from "./cosmwasm";
 export * from "./utils";
 export * from "./context";
 export * from "./ethereum";
+export * from "./evm";

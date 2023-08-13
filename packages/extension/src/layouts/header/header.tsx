@@ -230,7 +230,7 @@ export const HeaderLayout: FunctionComponent<HeaderProps> = ({
 
               return (
                 <Skeleton isNotReady={isNotReady} type="button">
-                  <Button {...props} />
+                  <Button {...props} color="primary" />
                 </Skeleton>
               );
             }

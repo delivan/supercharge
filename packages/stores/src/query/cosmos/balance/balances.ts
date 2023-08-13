@@ -153,9 +153,9 @@ export class ObservableQueryCosmosBalanceRegistry implements BalanceRegistry {
     chainId: string,
     chainGetter: ChainGetter,
     bech32Address: string,
-    minimalDenom: string
+    currency: AppCurrency
   ): ObservableQueryCosmosBalancesImpl | undefined {
-    const denomHelper = new DenomHelper(minimalDenom);
+    const denomHelper = new DenomHelper(currency.coinMinimalDenom);
     if (denomHelper.type !== "native") {
       return;
     }

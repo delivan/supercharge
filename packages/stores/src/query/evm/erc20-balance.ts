@@ -1,31 +1,37 @@
 import { QueryError, QueryResponse, QuerySharedContext } from "../../common";
-import { ObservableChainQueryJSONRPC } from "../chain-json-rpc-query";
 import { ChainGetter } from "../../chain";
 import { CoinPretty, Int } from "@keplr-wallet/unit";
 import { BalanceRegistry, IObservableQueryBalanceImpl } from "../balances";
 import { computed, makeObservable } from "mobx";
 import { AppCurrency } from "@keplr-wallet/types";
-import { DenomHelper } from "@keplr-wallet/common";
+import {
+  EthereumCallResult,
+  ObservableQueryEthereumCallInner,
+} from "../ethereum/call";
+import { Contract, ContractInterface } from "@ethersproject/contracts";
 
-export interface EthereumBalanceResult {
-  jsonrpc: "2.0";
-  id: number;
-  result: string;
-}
-
-export class ObservableQueryEthereumBalanceImplParent extends ObservableChainQueryJSONRPC<EthereumBalanceResult> {
+export class ObservableQueryEthereumERC20BalanceImplParent extends ObservableQueryEthereumCallInner {
   public duplicatedFetchResolver?: Promise<void>;
 
   constructor(
     sharedContext: QuerySharedContext,
     chainId: string,
     chainGetter: ChainGetter,
+    protected readonly contractAddress: string,
+    protected readonly contractABI: ContractInterface,
     protected readonly ethereumAddress: string
   ) {
-    super(sharedContext, chainId, chainGetter, "eth_getBalance", [
-      ethereumAddress,
-      "latest",
-    ]);
+    const erc20Contract = new Contract(contractAddress, contractABI);
+    const encodedBalanceOfFunctionData =
+      erc20Contract.interface.encodeFunctionData("balanceOf", [
+        ethereumAddress,
+      ]);
+    const transactionCall = {
+      to: contractAddress,
+      data: encodedBalanceOfFunctionData,
+    };
+
+    super(sharedContext, chainId, chainGetter, transactionCall);
 
     makeObservable(this);
   }
@@ -36,25 +42,21 @@ export class ObservableQueryEthereumBalanceImplParent extends ObservableChainQue
   }
 }
 
-export class ObservableQueryEthereumBalanceImpl
+export class ObservableQueryEthereumERC20BalanceImpl
   implements IObservableQueryBalanceImpl
 {
   constructor(
-    protected readonly parent: ObservableQueryEthereumBalanceImplParent,
+    protected readonly parent: ObservableQueryEthereumERC20BalanceImplParent,
     protected readonly chainId: string,
-    protected readonly chainGetter: ChainGetter
+    protected readonly chainGetter: ChainGetter,
+    protected readonly _currnecy: AppCurrency
   ) {
     makeObservable(this);
   }
 
   @computed
   get currency(): AppCurrency {
-    const chainInfo = this.chainGetter.getChain(this.chainId);
-    if (!chainInfo.evm) {
-      throw new Error("This chain doesn't support evm");
-    }
-
-    return chainInfo.evm.nativeCurrency;
+    return this._currnecy;
   }
 
   @computed
@@ -81,7 +83,7 @@ export class ObservableQueryEthereumBalanceImpl
   get isStarted(): boolean {
     return this.parent.isStarted;
   }
-  get response(): Readonly<QueryResponse<EthereumBalanceResult>> | undefined {
+  get response(): Readonly<QueryResponse<EthereumCallResult>> | undefined {
     return this.parent.response;
   }
 
@@ -126,9 +128,13 @@ export class ObservableQueryEthereumBalanceImpl
   }
 }
 
-export class ObservableQueryEthereumBalanceRegistry implements BalanceRegistry {
-  protected parentMap: Map<string, ObservableQueryEthereumBalanceImplParent> =
-    new Map();
+export class ObservableQueryEthereumERC20BalanceRegistry
+  implements BalanceRegistry
+{
+  protected parentMap: Map<
+    string,
+    ObservableQueryEthereumERC20BalanceImplParent
+  > = new Map();
 
   constructor(protected readonly sharedContext: QuerySharedContext) {}
 
@@ -137,29 +143,30 @@ export class ObservableQueryEthereumBalanceRegistry implements BalanceRegistry {
     chainGetter: ChainGetter,
     ethereumAddress: string,
     currency: AppCurrency
-  ): ObservableQueryEthereumBalanceImpl | undefined {
-    const denomHelper = new DenomHelper(currency.coinMinimalDenom);
-    if (denomHelper.type !== "native") {
-      return;
-    }
-    const key = `${chainId}/${ethereumAddress}/ethereum`;
+  ): ObservableQueryEthereumERC20BalanceImpl | undefined {
+    const key = `${chainId}/${ethereumAddress}/evm`;
 
-    if (!this.parentMap.has(key)) {
-      this.parentMap.set(
-        key,
-        new ObservableQueryEthereumBalanceImplParent(
-          this.sharedContext,
-          chainId,
-          chainGetter,
-          ethereumAddress
-        )
-      );
+    if ("contractAddress" in currency && "contractABI" in currency) {
+      if (!this.parentMap.has(key)) {
+        this.parentMap.set(
+          key,
+          new ObservableQueryEthereumERC20BalanceImplParent(
+            this.sharedContext,
+            chainId,
+            chainGetter,
+            currency.contractAddress,
+            currency.contractABI,
+            ethereumAddress
+          )
+        );
+      }
     }
 
-    return new ObservableQueryEthereumBalanceImpl(
+    return new ObservableQueryEthereumERC20BalanceImpl(
       this.parentMap.get(key)!,
       chainId,
-      chainGetter
+      chainGetter,
+      currency
     );
   }
 }

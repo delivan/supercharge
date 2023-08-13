@@ -16,6 +16,7 @@
     "lint-fix": "eslint --fix \"src/**/*\" && prettier --write \"src/**/*\""
   },
   "dependencies": {
+    "@ethersproject/contracts": "^5.7.0",
     "long": "^4.0.0"
   }
 }

@@ -5308,6 +5308,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@keplr-wallet/common@workspace:packages/common"
   dependencies:
+    "@ethersproject/contracts": ^5.7.0
     "@keplr-wallet/crypto": 0.12.16
     "@keplr-wallet/types": 0.12.16
     buffer: ^6.0.3
@@ -5627,6 +5628,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@keplr-wallet/types@workspace:packages/types"
   dependencies:
+    "@ethersproject/contracts": ^5.7.0
     long: ^4.0.0
   languageName: unknown
   linkType: soft

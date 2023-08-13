@@ -68,9 +68,9 @@ export class ObservableQueryCw20BalanceRegistry implements BalanceRegistry {
     chainId: string,
     chainGetter: ChainGetter,
     bech32Address: string,
-    minimalDenom: string
+    currency: AppCurrency
   ): IObservableQueryBalanceImpl | undefined {
-    const denomHelper = new DenomHelper(minimalDenom);
+    const denomHelper = new DenomHelper(currency.coinMinimalDenom);
     if (denomHelper.type === "cw20") {
       return new ObservableQueryCw20BalanceImpl(
         this.sharedContext,
