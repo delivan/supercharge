@@ -53,7 +53,7 @@ export const EnableChainsScene: FunctionComponent<{
   // 또한 밑의 prop이 제공된 경우에만 automatic chain selection(?) 기능이 처리된다.
   candidateAddresses?: {
     chainId: string;
-    bech32Addresses: {
+    addresses: {
       coinType: number;
       address: string;
     }[];
@@ -121,19 +121,20 @@ export const EnableChainsScene: FunctionComponent<{
     const [candidateAddresses, setCandidateAddresses] = useState<
       {
         chainId: string;
-        bech32Addresses: {
+        addresses: {
           coinType: number;
           address: string;
         }[];
       }[]
     >(propCandiateAddresses ?? []);
+
     useEffectOnce(() => {
       if (candidateAddresses.length === 0) {
         (async () => {
           // TODO: 이거 뭔가 finalize-key scene이랑 공통 hook 쓸 수 잇게 하던가 함수를 공유해야할 듯...?
           const candidateAddresses: {
             chainId: string;
-            bech32Addresses: {
+            addresses: {
               coinType: number;
               address: string;
             }[];
@@ -155,7 +156,7 @@ export const EnableChainsScene: FunctionComponent<{
 
                   candidateAddresses.push({
                     chainId: chainInfo.chainId,
-                    bech32Addresses: res.map((res) => {
+                    addresses: res.map((res) => {
                       return {
                         coinType: res.coinType,
                         address: res.bech32Address,
@@ -172,13 +173,15 @@ export const EnableChainsScene: FunctionComponent<{
                     await account.init();
                   }
 
-                  if (account.bech32Address) {
+                  if (account.bech32Address || account.ethereumHexAddress) {
                     candidateAddresses.push({
                       chainId: chainInfo.chainId,
-                      bech32Addresses: [
+                      addresses: [
                         {
                           coinType: chainInfo.bip44.coinType,
-                          address: account.bech32Address,
+                          address: chainInfo.evm
+                            ? account.ethereumHexAddress
+                            : account.bech32Address,
                         },
                       ],
                     });
@@ -205,7 +208,7 @@ export const EnableChainsScene: FunctionComponent<{
       for (const candidateAddress of candidateAddresses) {
         map.set(
           ChainIdHelper.parse(candidateAddress.chainId).identifier,
-          candidateAddress.bech32Addresses
+          candidateAddress.addresses
         );
       }
       return map;
@@ -224,23 +227,23 @@ export const EnableChainsScene: FunctionComponent<{
           if (
             keyRingStore.needMnemonicKeyCoinTypeFinalize(vaultId, chainInfo)
           ) {
-            if (candidateAddress.bech32Addresses.length === 1) {
+            if (candidateAddress.addresses.length === 1) {
               // finalize-key scene을 통하지 않고도 이 scene으로 들어올 수 있는 경우가 있기 때문에...
               keyRingStore.finalizeMnemonicKeyCoinType(
                 vaultId,
                 candidateAddress.chainId,
-                candidateAddress.bech32Addresses[0].coinType
+                candidateAddress.addresses[0].coinType
               );
             }
 
-            if (candidateAddress.bech32Addresses.length >= 2) {
+            if (candidateAddress.addresses.length >= 2) {
               (async () => {
                 const promises: Promise<unknown>[] = [];
 
-                for (const bech32Address of candidateAddress.bech32Addresses) {
+                for (const address of candidateAddress.addresses) {
                   const queryAccount =
                     queries.cosmos.queryAccount.getQueryBech32Address(
-                      bech32Address.address
+                      address.address
                     );
 
                   promises.push(queryAccount.waitResponse());
@@ -248,20 +251,20 @@ export const EnableChainsScene: FunctionComponent<{
 
                 await Promise.allSettled(promises);
 
-                const mainAddress = candidateAddress.bech32Addresses.find(
+                const mainAddress = candidateAddress.addresses.find(
                   (a) => a.coinType === chainInfo.bip44.coinType
                 );
-                const otherAddresses = candidateAddress.bech32Addresses.filter(
+                const otherAddresses = candidateAddress.addresses.filter(
                   (a) => a.coinType !== chainInfo.bip44.coinType
                 );
 
                 let otherIsSelectable = false;
                 if (mainAddress && otherAddresses.length > 0) {
                   for (const otherAddress of otherAddresses) {
-                    const bech32Address = otherAddress.address;
+                    const address = otherAddress.address;
                     const queryAccount =
                       queries.cosmos.queryAccount.getQueryBech32Address(
-                        bech32Address
+                        address
                       );
 
                     // Check that the account exist on chain.
@@ -329,11 +332,11 @@ export const EnableChainsScene: FunctionComponent<{
 
           // If the chain is not enabled, check that the account exists.
           // If the account exists, turn on the chain.
-          for (const bech32Address of candidateAddress.bech32Addresses) {
+          for (const address of candidateAddress.addresses) {
             // Check that the account has some assets or delegations.
             // If so, enable it by default
-            const queryBalance = queries.queryBalances.getQueryBech32Address(
-              bech32Address.address
+            const queryBalance = queries.queryBalances.getBalancesByAddress(
+              address.address
             ).stakable;
 
             if (queryBalance.response?.data) {
@@ -352,7 +355,7 @@ export const EnableChainsScene: FunctionComponent<{
 
             const queryDelegations =
               queries.cosmos.queryDelegations.getQueryBech32Address(
-                bech32Address.address
+                address.address
               );
             if (queryDelegations.delegationBalances.length > 0) {
               enabledChainIdentifiers.push(chainInfo.chainIdentifier);
@@ -464,7 +467,7 @@ export const EnableChainsScene: FunctionComponent<{
         if (addresses && addresses.length > 0) {
           return queriesStore
             .get(a.chainId)
-            .queryBalances.getQueryBech32Address(addresses[0].address).stakable
+            .queryBalances.getBalancesByAddress(addresses[0].address).stakable
             .balance;
         }
 
@@ -478,7 +481,7 @@ export const EnableChainsScene: FunctionComponent<{
         if (addresses && addresses.length > 0) {
           return queriesStore
             .get(b.chainId)
-            .queryBalances.getQueryBech32Address(addresses[0].address).stakable
+            .queryBalances.getBalancesByAddress(addresses[0].address).stakable
             .balance;
         }
 
@@ -575,8 +578,10 @@ export const EnableChainsScene: FunctionComponent<{
 
               const queries = queriesStore.get(chainInfo.chainId);
 
-              const balance = queries.queryBalances.getQueryBech32Address(
-                account.bech32Address
+              const balance = queries.queryBalances.getBalancesByAddress(
+                chainInfo.evm
+                  ? account.ethereumHexAddress
+                  : account.bech32Address
               ).stakable.balance;
 
               const enabled =
@@ -594,7 +599,11 @@ export const EnableChainsScene: FunctionComponent<{
                   balance={balance}
                   enabled={enabled}
                   blockInteraction={blockInteraction}
-                  isFresh={isFresh || account.bech32Address === ""}
+                  isFresh={
+                    isFresh ||
+                    account.bech32Address === "" ||
+                    account.ethereumHexAddress === ""
+                  }
                   onClick={() => {
                     if (
                       enabledChainIdentifierMap.get(chainInfo.chainIdentifier)
