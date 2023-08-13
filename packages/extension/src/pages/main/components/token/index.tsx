@@ -141,13 +141,22 @@ interface TokenItemProps {
   disabled?: boolean;
   forChange?: boolean;
   isNotReady?: boolean;
+  isCombined?: boolean;
 
   // For remaining unbonding time.
   altSentence?: string | React.ReactElement;
 }
 
 export const TokenItem: FunctionComponent<TokenItemProps> = observer(
-  ({ viewToken, onClick, disabled, forChange, isNotReady, altSentence }) => {
+  ({
+    viewToken,
+    onClick,
+    disabled,
+    forChange,
+    isNotReady,
+    isCombined,
+    altSentence,
+  }) => {
     const { priceStore } = useStore();
     const navigate = useNavigate();
     const intl = useIntl();
@@ -233,6 +242,19 @@ export const TokenItem: FunctionComponent<TokenItemProps> = observer(
               src={viewToken.token.currency.coinImageUrl}
               alt={viewToken.token.currency.coinDenom}
             />
+            {!isCombined && !isNotReady && (
+              <ChainImageFallback
+                style={{
+                  width: "0.75rem",
+                  height: "0.75rem",
+                  position: "absolute",
+                  bottom: "0px",
+                  right: "0px",
+                }}
+                src={viewToken.chainInfo.chainSymbolImageUrl}
+                alt={viewToken.chainInfo.chainName}
+              />
+            )}
           </Skeleton>
 
           <Gutter size="0.75rem" />
@@ -308,13 +330,19 @@ export const TokenItem: FunctionComponent<TokenItemProps> = observer(
                 </Box>
               ) : undefined}
             </XAxis>
-            <Skeleton layer={1} isNotReady={isNotReady} dummyMinWidth="4.5rem">
-              <Caption1 style={{ color: ColorPalette["gray-300"] }}>
-                {isIBC || isBridgedETH
-                  ? `on ${viewToken.chainInfo.chainName}`
-                  : viewToken.chainInfo.chainName}
-              </Caption1>
-            </Skeleton>
+            {!isCombined && (
+              <Skeleton
+                layer={1}
+                isNotReady={isNotReady}
+                dummyMinWidth="4.5rem"
+              >
+                <Caption1 style={{ color: ColorPalette["gray-300"] }}>
+                  {isIBC || isBridgedETH
+                    ? `on ${viewToken.chainInfo.chainName}`
+                    : viewToken.chainInfo.chainName}
+                </Caption1>
+              </Skeleton>
+            )}
           </Stack>
 
           <Column weight={1} />

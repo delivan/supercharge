@@ -2,20 +2,16 @@ import { observer } from "mobx-react-lite";
 import React, { FunctionComponent, useMemo, useState } from "react";
 import { BackButton } from "../../../layouts/header/components";
 import { HeaderLayout } from "../../../layouts/header";
-import styled, { useTheme } from "styled-components";
+import styled from "styled-components";
 import { Stack } from "../../../components/stack";
 import { SearchTextInput } from "../../../components/input";
 import { useStore } from "../../../stores";
 import { TokenItem } from "../../main/components";
-import { Column, Columns } from "../../../components/column";
-import { Body2 } from "../../../components/typography";
-import { Checkbox } from "../../../components/checkbox";
-import { ColorPalette } from "../../../styles";
 import { Dec } from "@keplr-wallet/unit";
 import { useFocusOnMount } from "../../../hooks/use-focus-on-mount";
 import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 
 const Styles = {
   Container: styled(Stack)`
@@ -27,12 +23,11 @@ export const SendSelectAssetPage: FunctionComponent = observer(() => {
   const { hugeQueriesStore } = useStore();
   const navigate = useNavigate();
   const intl = useIntl();
-  const theme = useTheme();
   const [searchParams] = useSearchParams();
   const paramIsIBCTransfer = searchParams.get("isIBCTransfer");
 
   const [search, setSearch] = useState("");
-  const [hideIBCToken, setHideIBCToken] = useState(false);
+  const [hideIBCToken] = useState(false);
 
   const searchRef = useFocusOnMount<HTMLInputElement>();
 
@@ -88,27 +83,6 @@ export const SendSelectAssetPage: FunctionComponent = observer(() => {
             setSearch(e.target.value);
           }}
         />
-
-        <Columns sum={1} gutter="0.25rem">
-          <Column weight={1} />
-          <Body2
-            onClick={() => setHideIBCToken(!hideIBCToken)}
-            style={{
-              color:
-                theme.mode === "light"
-                  ? ColorPalette["gray-200"]
-                  : ColorPalette["gray-300"],
-              cursor: "pointer",
-            }}
-          >
-            <FormattedMessage id="page.send.select-asset.hide-ibc-token" />
-          </Body2>
-          <Checkbox
-            size="small"
-            checked={hideIBCToken}
-            onChange={setHideIBCToken}
-          />
-        </Columns>
 
         {filteredTokens.map((viewToken) => {
           return (

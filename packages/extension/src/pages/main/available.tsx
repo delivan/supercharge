@@ -161,6 +161,8 @@ export const AvailableTabView: FunctionComponent<{
 
   const [isFoundTokenModalOpen, setIsFoundTokenModalOpen] = useState(false);
 
+  const [isShowCombinedBalance, setIsShowCombinedBalance] = useState(false);
+
   const isShowNotFound =
     allBalancesSearchFiltered.length === 0 && trimSearch.length > 0;
 
@@ -182,66 +184,91 @@ export const AvailableTabView: FunctionComponent<{
       ) : (
         <React.Fragment>
           <Stack gutter="0.5rem">
-            {TokenViewData.map(
-              ({ title, balance, lenAlwaysShown, tooltip }) => {
-                if (balance.length === 0) {
-                  return null;
-                }
-
-                return (
-                  <CollapsibleList
-                    key={title}
-                    title={
-                      <TokenTitleView
-                        title={title}
-                        tooltip={tooltip}
-                        right={
-                          hasLowBalanceTokens ? (
-                            <React.Fragment>
-                              <Caption2
-                                style={{ cursor: "pointer" }}
-                                onClick={() => {
-                                  uiConfigStore.setHideLowBalance(
-                                    !uiConfigStore.isHideLowBalance
-                                  );
-                                }}
-                                color={ColorPalette["gray-300"]}
-                              >
-                                <FormattedMessage id="page.main.available.hide-low-balance" />
-                              </Caption2>
-
-                              <Gutter size="0.25rem" />
-
-                              <Checkbox
-                                size="extra-small"
-                                checked={uiConfigStore.isHideLowBalance}
-                                onChange={() => {
-                                  uiConfigStore.setHideLowBalance(
-                                    !uiConfigStore.isHideLowBalance
-                                  );
-                                }}
-                              />
-                            </React.Fragment>
-                          ) : undefined
-                        }
-                      />
-                    }
-                    lenAlwaysShown={lenAlwaysShown}
-                    items={balance.map((viewToken) => (
-                      <TokenItem
-                        viewToken={viewToken}
-                        key={`${viewToken.chainInfo.chainId}-${viewToken.token.currency.coinMinimalDenom}`}
-                        onClick={() =>
-                          navigate(
-                            `/send?chainId=${viewToken.chainInfo.chainId}&coinMinimalDenom=${viewToken.token.currency.coinMinimalDenom}`
-                          )
-                        }
-                      />
-                    ))}
-                  />
-                );
+            {TokenViewData.map(({ title, balance, lenAlwaysShown }) => {
+              if (balance.length === 0) {
+                return null;
               }
-            )}
+
+              return (
+                <CollapsibleList
+                  key={title}
+                  title={
+                    <TokenTitleView
+                      title={title}
+                      right={
+                        <React.Fragment>
+                          <Caption2
+                            style={{ cursor: "pointer" }}
+                            onClick={() => {
+                              setIsShowCombinedBalance(!isShowCombinedBalance);
+                            }}
+                            color={ColorPalette["gray-300"]}
+                          >
+                            Show Combined Balance
+                          </Caption2>
+
+                          <Gutter size="0.25rem" />
+
+                          <Checkbox
+                            size="extra-small"
+                            checked={isShowCombinedBalance}
+                            onChange={() => {
+                              setIsShowCombinedBalance(!isShowCombinedBalance);
+                            }}
+                          />
+                        </React.Fragment>
+                      }
+                    />
+                  }
+                  lenAlwaysShown={lenAlwaysShown}
+                  items={
+                    isShowCombinedBalance
+                      ? balance
+                          .reduce((acc: ViewToken[], cur: ViewToken) => {
+                            const existingCurrencyArrayIndex = acc.findIndex(
+                              (viewToken: ViewToken) =>
+                                viewToken.token.currency.coinMinimalDenom ===
+                                cur.token.currency.coinMinimalDenom
+                            );
+
+                            if (existingCurrencyArrayIndex >= 0) {
+                              return [
+                                ...acc.slice(0, existingCurrencyArrayIndex),
+                                {
+                                  ...acc[existingCurrencyArrayIndex],
+                                  token: acc[
+                                    existingCurrencyArrayIndex
+                                  ].token.add(cur.token),
+                                },
+                                ...acc.slice(existingCurrencyArrayIndex + 1),
+                              ];
+                            }
+
+                            return [...acc, cur];
+                          }, [])
+                          .map((viewToken: ViewToken) => (
+                            <TokenItem
+                              viewToken={viewToken}
+                              key={`${viewToken.chainInfo.chainId}-${viewToken.token.currency.coinMinimalDenom}`}
+                              onClick={() => navigate("/send/select-asset")}
+                              isCombined
+                            />
+                          ))
+                      : balance.map((viewToken) => (
+                          <TokenItem
+                            viewToken={viewToken}
+                            key={`${viewToken.chainInfo.chainId}-${viewToken.token.currency.coinMinimalDenom}`}
+                            onClick={() =>
+                              navigate(
+                                `/send?chainId=${viewToken.chainInfo.chainId}&coinMinimalDenom=${viewToken.token.currency.coinMinimalDenom}`
+                              )
+                            }
+                          />
+                        ))
+                  }
+                />
+              );
+            })}
           </Stack>
 
           {lookingForChains.length > 0 ? (
