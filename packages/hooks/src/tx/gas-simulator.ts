@@ -38,6 +38,8 @@ class GasSimulatorState {
   @observable.ref
   protected _stdFee: StdFee | undefined = undefined;
   @observable.ref
+  protected _recentAdditonalFeeEstimated: Coin | undefined = undefined;
+  @observable.ref
   protected _error: Error | undefined = undefined;
 
   constructor() {
@@ -78,6 +80,15 @@ class GasSimulatorState {
   @action
   setRecentGasEstimated(value: number) {
     this._recentGasEstimated = value;
+  }
+
+  get recentAdditonalFeeEstimated(): Coin | undefined {
+    return this._recentAdditonalFeeEstimated;
+  }
+
+  @action
+  setRecentAdditonalFeeEstimated(value: Coin) {
+    this._recentAdditonalFeeEstimated = value;
   }
 
   get tx(): TxSimulate | undefined {
@@ -270,6 +281,14 @@ export class GasSimulator extends TxChainSetter implements IGasSimulator {
     return num;
   }
 
+  get additionalFeeEstimated(): Coin | undefined {
+    const key = this.storeKey;
+    const state = this.getState(key);
+    if (state.recentAdditonalFeeEstimated != null) {
+      return state.recentAdditonalFeeEstimated;
+    }
+  }
+
   get gasAdjustmentValue(): string {
     return this._gasAdjustmentValue;
   }
@@ -382,7 +401,7 @@ export class GasSimulator extends TxChainSetter implements IGasSimulator {
         });
 
         promise
-          .then(({ gasUsed }) => {
+          .then(({ gasUsed, feeUsed }) => {
             // Changing the gas in the gas config definitely will make the reaction to the fee config,
             // and, this reaction can potentially create a reaction in the amount config as well (Ex, when the "Max" option set).
             // These potential reactions can create repeated meaningless reactions.
@@ -394,6 +413,10 @@ export class GasSimulator extends TxChainSetter implements IGasSimulator {
                 0.02
             ) {
               state.setRecentGasEstimated(gasUsed);
+            }
+
+            if (feeUsed && !state.recentAdditonalFeeEstimated) {
+              state.setRecentAdditonalFeeEstimated(feeUsed);
             }
 
             state.setOutdatedCosmosSdk(false);
@@ -456,8 +479,15 @@ export class GasSimulator extends TxChainSetter implements IGasSimulator {
 
     this._disposers.push(
       autorun(() => {
-        if (this.enabled && this.gasEstimated != null) {
-          this.gasConfig.setValue(this.gasEstimated * this.gasAdjustment);
+        if (this.enabled) {
+          if (this.gasEstimated != null) {
+            this.gasConfig.setValue(this.gasEstimated * this.gasAdjustment);
+          }
+          if (this.additionalFeeEstimated) {
+            this.feeConfig.setAdditionalFeeAmount(
+              this.additionalFeeEstimated.amount
+            );
+          }
         }
       })
     );

@@ -44,6 +44,9 @@ export class FeeConfig extends TxChainSetter implements IFeeConfig {
   @observable
   protected _disableBalanceCheck: boolean = false;
 
+  @observable
+  protected _additionalFeeAmount?: string = undefined;
+
   constructor(
     chainGetter: ChainGetter,
     protected readonly queriesStore: QueriesStore,
@@ -79,6 +82,15 @@ export class FeeConfig extends TxChainSetter implements IFeeConfig {
 
   get disableBalanceCheck(): boolean {
     return this._disableBalanceCheck;
+  }
+
+  @action
+  setAdditionalFeeAmount(amount: string | undefined) {
+    this._additionalFeeAmount = amount;
+  }
+
+  get additionalFeeAmount(): string | undefined {
+    return this._additionalFeeAmount;
   }
 
   get type(): FeeType | "manual" {
@@ -376,9 +388,9 @@ export class FeeConfig extends TxChainSetter implements IFeeConfig {
   readonly getFeeTypePrettyForFeeCurrency = computedFn(
     (feeCurrency: FeeCurrency, feeType: FeeType) => {
       const gas = this.gasConfig.gas;
-      const amount = this.getGasPriceForFeeCurrency(feeCurrency, feeType).mul(
-        new Dec(gas)
-      );
+      const amount = this.getGasPriceForFeeCurrency(feeCurrency, feeType)
+        .mul(new Dec(gas))
+        .add(new Dec(this._additionalFeeAmount ?? "0"));
 
       return new CoinPretty(feeCurrency, amount.roundUp()).maxDecimals(
         feeCurrency.coinDecimals
@@ -421,6 +433,24 @@ export class FeeConfig extends TxChainSetter implements IFeeConfig {
                 return new Dec(0);
               }
             }
+          }
+        }
+      }
+
+      if (this.chainInfo.evm) {
+        const baseFeePerGas = this.getEIP1559BaseFeePerGas();
+        switch (feeType) {
+          case "low": {
+            return new Dec(baseFeePerGas ?? 0).mul(new Dec(1));
+          }
+          case "average": {
+            return new Dec(baseFeePerGas ?? 0).mul(new Dec(1.5));
+          }
+          case "high": {
+            return new Dec(baseFeePerGas ?? 0).mul(new Dec(2));
+          }
+          default: {
+            throw new Error(`Unknown fee type: ${feeType}`);
           }
         }
       }
@@ -615,6 +645,16 @@ export class FeeConfig extends TxChainSetter implements IFeeConfig {
 
     return {};
   }
+
+  readonly getEIP1559BaseFeePerGas = computedFn((): string | undefined => {
+    const queryBlock = this.queriesStore
+      .get(this.chainId)
+      .ethereum?.queryEthereumBlockByNumberOrTag.getQueryByBlockNumberOrTag(
+        "pending"
+      );
+
+    return queryBlock?.block?.baseFeePerGas;
+  });
 }
 
 export const useFeeConfig = (

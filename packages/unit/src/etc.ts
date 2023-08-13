@@ -1,6 +1,9 @@
+import { BigNumber } from "@ethersproject/bignumber";
+
 const regexIntString = /^-?\d+$/;
 const regexDecString = /^-?\d+.?\d*$/;
 const regexExponentDecString = /^(-?)([\d.]+)e([-+])([\d]+)$/;
+const regexHexString = /^-?0x[0-9a-f]+$/;
 
 export function isValidIntegerString(str: string): boolean {
   return regexIntString.test(str);
@@ -12,6 +15,10 @@ export function isValidDecimalString(str: string): boolean {
 
 export function isExponentDecString(str: string): boolean {
   return regexExponentDecString.test(str);
+}
+
+export function isHexString(str: string): boolean {
+  return regexHexString.test(str);
 }
 
 function makeZerosStr(len: number): string {
@@ -70,4 +77,8 @@ export function exponentDecStringToDecString(str: string): string {
   } else {
     return prefix + numStr + makeZerosStr(exponent);
   }
+}
+
+export function hexStringToDecString(str: string): string {
+  return BigNumber.from(str).toString();
 }

@@ -2,6 +2,7 @@ import { Any } from "@keplr-wallet/proto-types/google/protobuf/any";
 import { Dec } from "@keplr-wallet/unit";
 import {
   BroadcastMode,
+  Coin,
   Keplr,
   KeplrSignOptions,
   Msg,
@@ -41,6 +42,7 @@ export interface MakeTxResponse {
     memo?: string
   ): Promise<{
     gasUsed: number;
+    feeUsed?: Coin;
   }>;
   simulateAndSend(
     feeOptions: {

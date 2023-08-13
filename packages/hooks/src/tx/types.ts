@@ -57,6 +57,8 @@ export interface IFeeConfig extends ITxChainSetter {
       | undefined
   ): void;
 
+  setAdditionalFeeAmount(amount: string): void;
+
   selectableFeeCurrencies: FeeCurrency[];
 
   toStdFee(): StdFee;

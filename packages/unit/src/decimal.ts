@@ -4,6 +4,8 @@ import {
   exponentDecStringToDecString,
   isExponentDecString,
   isValidDecimalString,
+  isHexString,
+  hexStringToDecString,
 } from "./etc";
 import { integerStringToUSLocaleString } from "./utils";
 
@@ -96,6 +98,8 @@ export class Dec {
       if (!isValidDecimalString(int)) {
         if (isExponentDecString(int)) {
           int = exponentDecStringToDecString(int);
+        } else if (isHexString(int)) {
+          int = hexStringToDecString(int);
         } else {
           throw new Error(`invalid decimal: ${int}`);
         }

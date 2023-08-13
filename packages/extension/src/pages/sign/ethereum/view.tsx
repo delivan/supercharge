@@ -17,6 +17,16 @@ import { EthSignType } from "@keplr-wallet/types";
 import { handleEthereumPreSign } from "../utils/handle-eth-sign";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useTheme } from "styled-components";
+import { FeeControl } from "../../../components/input/fee-control";
+import {
+  useAmountConfig,
+  useFeeConfig,
+  useGasConfig,
+  useGasSimulator,
+  useSenderConfig,
+} from "@keplr-wallet/hooks";
+import { Stack } from "../../../components/stack";
+import { ExtensionKVStore } from "@keplr-wallet/common";
 
 /**
  * CosmosTxView의 주석을 꼭 참고하셈
@@ -27,14 +37,18 @@ import { useTheme } from "styled-components";
 export const EthereumSigningView: FunctionComponent<{
   interactionData: NonNullable<SignEthereumInteractionStore["waitingData"]>;
 }> = observer(({ interactionData }) => {
-  const { chainStore, uiConfigStore, signEthereumInteractionStore } =
-    useStore();
+  const {
+    chainStore,
+    accountStore,
+    uiConfigStore,
+    signEthereumInteractionStore,
+    queriesStore,
+  } = useStore();
   const intl = useIntl();
   const theme = useTheme();
 
-  const interactionInfo = useInteractionInfo(() => {
-    signEthereumInteractionStore.rejectAll();
-  });
+  const chainInfo = chainStore.getChain(interactionData.data.chainId);
+  const account = accountStore.getAccount(chainInfo.chainId);
 
   const messageText = useMemo(() => {
     switch (interactionData.data.signType) {
@@ -57,10 +71,51 @@ export const EthereumSigningView: FunctionComponent<{
     }
   }, [interactionData.data]);
 
+  const tx = EthSignType.TRANSACTION ? JSON.parse(messageText) : undefined;
+
+  const senderConfig = useSenderConfig(
+    chainStore,
+    chainInfo.chainId,
+    account.ethereumHexAddress
+  );
+  const amountConfig = useAmountConfig(
+    chainStore,
+    queriesStore,
+    chainInfo.chainId,
+    senderConfig
+  );
+  const gasConfig = useGasConfig(chainStore, chainInfo.chainId, 21000);
+  const feeConfig = useFeeConfig(
+    chainStore,
+    queriesStore,
+    chainInfo.chainId,
+    senderConfig,
+    amountConfig,
+    gasConfig
+  );
+
+  const interactionInfo = useInteractionInfo(() => {
+    signEthereumInteractionStore.rejectAll();
+  });
+
   const [isLedgerInteracting, setIsLedgerInteracting] = useState(false);
   const [ledgerInteractingError, setLedgerInteractingError] = useState<
     Error | undefined
   >(undefined);
+
+  const gasSimulator = useGasSimulator(
+    new ExtensionKVStore("gas-simulator.main.send"),
+    chainStore,
+    chainInfo.chainId,
+    gasConfig,
+    feeConfig,
+    "native",
+    () => {
+      return {
+        simulate: () => account.ethereum.simulateL1DataFee(tx),
+      };
+    }
+  );
 
   return (
     <HeaderLayout
@@ -162,37 +217,47 @@ export const EthereumSigningView: FunctionComponent<{
         </Box>
 
         <div style={{ flex: 1 }} />
-        <Box
-          padding="1rem"
-          backgroundColor={
-            theme.mode === "light"
-              ? ColorPalette.white
-              : ColorPalette["gray-600"]
-          }
-          borderRadius="0.375rem"
-        >
-          <XAxis alignY="center">
-            <Body2
-              color={
-                theme.mode === "light"
-                  ? ColorPalette["gray-500"]
-                  : ColorPalette["gray-200"]
-              }
-            >
-              <FormattedMessage id="page.sign.ethereum.requested-network" />
-            </Body2>
-            <div style={{ flex: 1 }} />
-            <Subtitle3
-              color={
-                theme.mode === "light"
-                  ? ColorPalette["gray-200"]
-                  : ColorPalette["gray-50"]
-              }
-            >
-              {chainStore.getChain(interactionData.data.chainId).chainName}
-            </Subtitle3>
-          </XAxis>
-        </Box>
+        <Stack gutter="0.75rem">
+          {interactionData.data.signType === EthSignType.TRANSACTION && (
+            <FeeControl
+              senderConfig={senderConfig}
+              feeConfig={feeConfig}
+              gasConfig={gasConfig}
+              gasSimulator={gasSimulator}
+            />
+          )}
+          <Box
+            padding="1rem"
+            backgroundColor={
+              theme.mode === "light"
+                ? ColorPalette.white
+                : ColorPalette["gray-600"]
+            }
+            borderRadius="0.375rem"
+          >
+            <XAxis alignY="center">
+              <Body2
+                color={
+                  theme.mode === "light"
+                    ? ColorPalette["gray-500"]
+                    : ColorPalette["gray-200"]
+                }
+              >
+                <FormattedMessage id="page.sign.ethereum.requested-network" />
+              </Body2>
+              <div style={{ flex: 1 }} />
+              <Subtitle3
+                color={
+                  theme.mode === "light"
+                    ? ColorPalette["gray-200"]
+                    : ColorPalette["gray-50"]
+                }
+              >
+                {chainStore.getChain(interactionData.data.chainId).chainName}
+              </Subtitle3>
+            </XAxis>
+          </Box>
+        </Stack>
 
         <LedgerGuideBox
           data={{

@@ -91,7 +91,12 @@ export const SendAmountPage: FunctionComponent = observer(() => {
     chainId,
     sender,
     // TODO: 이 값을 config 밑으로 빼자
-    300000,
+    chainInfo.evm
+      ? initialCoinMinimalDenom ===
+        chainInfo.evm.nativeCurrency.coinMinimalDenom
+        ? 21000
+        : 65000
+      : 300000,
     {
       allowHexAddressOnEthermint: !chainStore
         .getChain(chainId)
@@ -388,21 +393,25 @@ export const SendAmountPage: FunctionComponent = observer(() => {
 
           <AmountInput amountConfig={sendConfigs.amountConfig} />
 
-          <MemoInput
-            memoConfig={sendConfigs.memoConfig}
-            placeholder={intl.formatMessage({
-              id: "page.send.amount.memo-placeholder",
-            })}
-          />
+          {!chainInfo.evm && (
+            <MemoInput
+              memoConfig={sendConfigs.memoConfig}
+              placeholder={intl.formatMessage({
+                id: "page.send.amount.memo-placeholder",
+              })}
+            />
+          )}
 
           <Styles.Flex1 />
 
-          <FeeControl
-            senderConfig={sendConfigs.senderConfig}
-            feeConfig={sendConfigs.feeConfig}
-            gasConfig={sendConfigs.gasConfig}
-            gasSimulator={gasSimulator}
-          />
+          {!chainInfo.evm && (
+            <FeeControl
+              senderConfig={sendConfigs.senderConfig}
+              feeConfig={sendConfigs.feeConfig}
+              gasConfig={sendConfigs.gasConfig}
+              gasSimulator={gasSimulator}
+            />
+          )}
         </Stack>
       </Box>
     </HeaderLayout>
